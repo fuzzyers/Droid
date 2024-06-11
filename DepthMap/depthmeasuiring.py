@@ -19,7 +19,7 @@ logging.set_verbosity_error()
 depth_estimator = pipeline(task="depth-estimation")
 
 # Load and display raw image
-raw_image = Image.open('./me.jpg')
+raw_image = Image.open('./img2.jpg')
 raw_image = raw_image.convert('RGB')  # Ensure it's in RGB mode
 
 plt.imshow(raw_image)
@@ -86,3 +86,53 @@ for slice_ in slices:
 plt.title("Detected Close Objects")
 plt.axis('off')
 plt.show()
+
+def determine_movement_direction(depth_values, threshold):
+    """
+    Determines the best direction for the robot to move based on depth values.
+
+    Parameters:
+    - depth_values (numpy array): The depth values from the depth estimation.
+    - threshold (float): The depth threshold for deciding if an object is close.
+
+    Returns:
+    - str: The direction the robot should move ("forward", "left", "right").
+    """
+    # Define regions of interest
+    height, width = depth_values.shape
+    center_region = depth_values[:, width//3:2*width//3]
+    left_region = depth_values[:, :width//3]
+    right_region = depth_values[:, 2*width//3:]
+
+    # Calculate the mean depth in each region
+    mean_center_depth = np.mean(center_region)
+    mean_left_depth = np.mean(left_region)
+    mean_right_depth = np.mean(right_region)
+
+    # Decision logic
+    if mean_center_depth > threshold:
+        return "forward"
+    elif mean_left_depth > threshold and mean_right_depth < threshold:
+        return "left"
+    elif mean_right_depth > threshold and mean_left_depth < threshold:
+        return "right"
+    else:
+        return "stop"
+
+# Decision Making for Robot Navigation
+direction = determine_movement_direction(depth_values, threshold)
+print(f"Recommended direction for the robot: {direction}")
+
+# Display the mean depths for debug purposes
+height, width = depth_values.shape
+center_region = depth_values[:, width//3:2*width//3]
+left_region = depth_values[:, :width//3]
+right_region = depth_values[:, 2*width//3:]
+
+mean_center_depth = np.mean(center_region)
+mean_left_depth = np.mean(left_region)
+mean_right_depth = np.mean(right_region)
+
+print(f"Mean Center Depth: {mean_center_depth}")
+print(f"Mean Left Depth: {mean_left_depth}")
+print(f"Mean Right Depth: {mean_right_depth}")
