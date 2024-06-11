@@ -38,7 +38,7 @@ prediction = torch.nn.functional.interpolate(
     align_corners=False,
 )
 
-# Convert to numpy array and normalize
+# Convert to numpy array
 output = prediction.squeeze().numpy()
 formatted = (output * 255 / np.max(output)).astype("uint8")
 depth = Image.fromarray(formatted)
