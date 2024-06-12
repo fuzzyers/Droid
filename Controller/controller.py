@@ -8,7 +8,7 @@ ser = serial.Serial('COM4', 9600)  # For Windows
 time.sleep(2)  
 
 facial_script = "./FacialRecognition/facialrecognition.py"
-python_interpreter = "C:/Users/jacki/anaconda3/python"  # Replace with the correct path for your system
+python_interpreter = "C:/Users/jacki/anaconda3/python"  #This uses the anaconda interpter as it has access to all my modules
 
 def takephoto():
     cap = cv2.VideoCapture(0)
@@ -25,6 +25,10 @@ def takephoto():
     cv2.destroyAllWindows()
 
     if ret:
+        image_path = "./captured_image.jpg"
+        cv2.imwrite(image_path, frame)
+        print(f"Image saved as {image_path}")
+
         return frame
     else:
         print("Error: Could not capture image.")
@@ -57,10 +61,10 @@ def write_i2c(address, data):
     #If it sees person in facial recognition it will move towards them
     #If the depth mapping says the road is blocked it will take a detour then it will repeat photo
     
-write_i2c(0x04, ord('A'))  # Write 'A' to the I2C slave at address 0x04
-response = read_i2c(0x04)  # Read from the I2C slave at address 0x04
-print("Received:", response.decode('utf-8'))
+#write_i2c(0x04, ord('A'))  # Write 'A' to the I2C slave at address 0x04
+#response = read_i2c(0x04)  # Read from the I2C slave at address 0x04
+#print("Received:", response.decode('utf-8'))
 
-#takephoto()
-#processphoto()
+takephoto()
+processphoto()
 ser.close()
