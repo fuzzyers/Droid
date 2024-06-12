@@ -86,7 +86,7 @@ if not os.path.exists(file_path):
         json.dump([], json_file)  # Initialize with an empty list
 
 with open(file_path, "w") as json_file:
-    json.dump(test[results], json_file, indent=4)
+    json.dump(results, json_file, indent=4)
 
 for result in results:
     print(f"{result['name']} is in the {result['position']} of the screen.")
