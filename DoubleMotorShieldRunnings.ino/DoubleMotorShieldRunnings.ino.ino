@@ -13,11 +13,13 @@ int brakePin1 = 8;
 bool directionState;
 
 void setup() {
-  Wire.begin(SLAVE_ADDRESS);
-  Wire.onReceive(receiveEvent); // register event
-  Wire.onRequest(requestEvent); // register event
   Serial.begin(9600);
+  while (!Serial) {
+    ; // Wait for the serial port to connect
+  }
   Serial.println("I2C Slave Initialized");
+  pinMode(LED_BUILTIN, OUTPUT); // Set the built-in LED pin as output
+
 
   // Define pins
   pinMode(directionPin, OUTPUT);
@@ -29,26 +31,34 @@ void setup() {
 }
 
 void loop() {
-  // Change direction every loop()
-  // directionState = !directionState;
+  if (Serial.available() > 0) {
+    char received = Serial.read(); // Read the incoming byte
+    Serial.print("Received: ");
+    Serial.println(received); // Print the received byte
 
-  // moveMotor(directionState, 100);
-  // delay(2000);
-
-  // brakeMotor();
-  // delay(2000);
+    controller(received);
+  }
+  
   delay(100);
 }
 
-void moveMotor(bool direction, int speed) {
+void controller(char received) {
+    if (received == 'F') {
+      // Change motor direction
+      moveMotor(100);
+      delay(2000);
+      brakeMotor();
+      delay(2000);
+    }
+
+}
+
+void moveMotor(int speed) {
   // Write direction
-  if (direction == false) {
-    digitalWrite(directionPin, LOW);
-    digitalWrite(directionPin1, LOW);
-  } else {
-    digitalWrite(directionPin, HIGH);
-    digitalWrite(directionPin1, HIGH);
-  }
+
+  digitalWrite(directionPin, HIGH);
+  digitalWrite(directionPin1, HIGH);
+  
 
   // Release brakes
   digitalWrite(brakePin, LOW);
@@ -69,21 +79,3 @@ void brakeMotor() {
   analogWrite(pwmPin1, 0);
 }
 
-void receiveEvent(int howMany) {
-  if (Wire.available() >= 2) { // ensure there are at least 2 bytes
-    char command = Wire.read();
-    int value = Wire.read(); // read the second byte
-    
-    if (command == 'M') { // Move command
-      bool direction = value & 1; // assuming direction is in the LSB
-      int speed = value >> 1; // remaining bits represent speed
-      moveMotor(direction, speed);
-    } else if (command == 'B') { // Brake command
-      brakeMotor();
-    }
-  }
-}
-
-void requestEvent() {
-  Wire.write("Hello from Arduino"); // respond with message
-}
