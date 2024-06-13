@@ -1,1 +1,12 @@
-[]
+[
+    {
+        "name": "Jackson",
+        "position": "center",
+        "bounding_box": [
+            201,
+            510,
+            387,
+            324
+        ]
+    }
+]
