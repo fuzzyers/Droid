@@ -1,66 +1,118 @@
 import cv2
 import subprocess
-from pyftdi.i2c import I2cController
-from pyftdi.ftdi import Ftdi
 import serial
 import time
 
-ser = serial.Serial('COM5', 9600)
-time.sleep(2)  
+# Constants
+SERIAL_PORT = 'COM5'
+BAUD_RATE = 9600
+FACIAL_SCRIPT = "./FacialRecognition/facialrecognition.py"
+PYTHON_INTERPRETER = "C:/Users/jacki/anaconda3/python"
+KNOWN_IMAGE_PATH = "me.jpg"
+IMAGE_PATH = "./me3.jpg"
+MISSION = "Jackson"
 
-facial_script = "./FacialRecognition/facialrecognition.py"
-python_interpreter = "C:/Users/jacki/anaconda3/python"  #This uses the anaconda interpter as it has access to all my modules
-mission = "Jackson"
-def takephoto():
+# States
+STATE_IDLE = 'IDLE'
+STATE_TAKE_PHOTO = 'TAKE_PHOTO'
+STATE_PROCESS_PHOTO = 'PROCESS_PHOTO'
+STATE_MOVE_TOWARDS = 'MOVE_TOWARDS'
+STATE_MISSION = 'MISSION'
+STATE_SEARCH = 'SEARCH'
+
+# Initialize serial communication
+#ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
+time.sleep(2)
+mission_location = ""
+
+# Helper functions
+def take_photo():
     cap = cv2.VideoCapture(0)
-
     if not cap.isOpened():
         print("Error: Could not open webcam.")
-        return None
+        return False
 
-    # Capture a single frame
     ret, frame = cap.read()
-
-    # Release the webcam
     cap.release()
     cv2.destroyAllWindows()
 
     if ret:
-        image_path = "./captured_image.jpg"
-        cv2.imwrite(image_path, frame)
-        print(f"Image saved as {image_path}")
-
-        return frame
+        cv2.imwrite(IMAGE_PATH, frame)
+        print(f"Image saved as {IMAGE_PATH}")
+        return True
     else:
         print("Error: Could not capture image.")
-        return None
+        return False
 
-
-def processphoto():
-    #Processes the photo with the depth map script and the facial recognition script
+def process_photo():
     try:
-        subprocess.run([python_interpreter, facial_script], check=True)
+        result = subprocess.run([PYTHON_INTERPRETER, FACIAL_SCRIPT, KNOWN_IMAGE_PATH, IMAGE_PATH], check=True, capture_output=True, text=True)
+        output = result.stdout.strip()
+        print(output)
+        if MISSION in output:
+            
+            return True
+        else:
+            return False
     except subprocess.CalledProcessError as e:
         print(f"Error during subprocess call: {e}")
-    
- 
-def mission():
-    #if Jackson is Close turn 90deg then project.
-    
-#def movement(direction):
-    #If it sees person in facial recognition it will move towards them
-    #If the depth mapping says the road is blocked it will take a detour then it will repeat photo
-    
+        return False
 
-#takephoto()
-#processphoto()
+def move_forward():
+    #ser.write(b'F')
+    #print("Sent 'F' to the Arduino")
+    time.sleep(0.1)
+    #while ser.in_waiting > 0:
+     #   response = ser.readline().decode('utf-8').strip()
+      #  print("Arduino responded:", response)
 
-ser.write(b'F')  # Send character 'F' f is for forwards
-print("Sent 'F' to the Arduino")
+def search():
+    # Search behavior, for example, turning to find Jackson
+    #ser.write(b'S')
+    #print("Sent 'S' to the Arduino to search")
+    time.sleep(0.1)
+    #while ser.in_waiting > 0:
+     #   response = ser.readline().decode('utf-8').strip()
+      #  print("Arduino responded:", response)
 
-time.sleep(0.1)  
-while ser.in_waiting > 0:
-    response = ser.readline().decode('utf-8').strip()
-    print("Arduino responded:", response)
+def mission_task():
+    # Example mission task: Turn 90 degrees and project if Jackson is close
+    pass
 
-ser.close()
+# Main state machine loop
+state = STATE_IDLE
+
+while True:
+    if state == STATE_IDLE:
+        # Perform idle actions
+        state = STATE_TAKE_PHOTO
+
+    elif state == STATE_TAKE_PHOTO:
+        if take_photo():
+            state = STATE_PROCESS_PHOTO
+    elif state == STATE_PROCESS_PHOTO:
+        if process_photo():
+            
+            
+            
+            state = STATE_MOVE_TOWARDS
+        else:
+            state = STATE_SEARCH
+
+    elif state == STATE_MOVE_TOWARDS:
+        move_forward()
+        state = STATE_MISSION
+
+    elif state == STATE_SEARCH:
+        search()
+        state = STATE_TAKE_PHOTO
+
+    elif state == STATE_MISSION:
+        mission_task()
+        state = STATE_IDLE
+
+    else:
+        print("Unknown state!")
+        state = STATE_IDLE
+
+#ser.close()

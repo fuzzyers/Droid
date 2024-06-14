@@ -2,6 +2,7 @@ import cv2
 import face_recognition
 import json
 import os
+import sys
 
 def recognize_faces_and_positions(known_image_path, test_image_path):
     your_image = face_recognition.load_image_file(known_image_path)
@@ -17,7 +18,7 @@ def recognize_faces_and_positions(known_image_path, test_image_path):
     max_width = 800
     max_height = 600
     
-    # This will check the size of the img and resize it if nescassry
+    # Resize image if necessary
     original_height, original_width = test_image.shape[:2]
     if original_width > max_width or original_height > max_height:
         scaling_factor = min(max_width / original_width, max_height / original_height)
@@ -64,22 +65,15 @@ def recognize_faces_and_positions(known_image_path, test_image_path):
     
     return results
 
-# Define paths to the known image and the test image
-known_image_path = "me.jpg"
-test_image_path = "me4.jpg"
+if __name__ == "__main__":
+    # Command line arguments for known and test image paths
+    known_image_path = sys.argv[1]
+    test_image_path = sys.argv[2]
 
-# Recognize faces and get their positions
-results = recognize_faces_and_positions(known_image_path, test_image_path)
+    results = recognize_faces_and_positions(known_image_path, test_image_path)
 
-# Process the results and save to a JSON file
-file_path = "controls.json"
+    # Process the results and save to a JSON file
+    file_path = "controls.json"
 
-if not os.path.exists(file_path):
-    with open(file_path, "w") as json_file:
-        json.dump([], json_file)  # Initialize with an empty list
-
-with open(file_path, "w") as json_file:
-    json.dump(results, json_file, indent=4)
-
-for result in results:
-    print(f"{result['name']} is in the {result['position']} of the screen.")
+    for result in results:
+        print(f"{result['name']} is in the {result['position']}")

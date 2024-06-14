@@ -153,4 +153,4 @@ with open(file_path, "w") as json_file:
     json.dump(face_positions, json_file, indent=4)
 
 for result in face_positions:
-    print(f"{result['name']} is in the {result['position']} of the screen.")
+    print(f"{result['name']} is in the {result['position']}")
