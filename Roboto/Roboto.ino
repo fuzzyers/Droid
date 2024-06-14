@@ -8,9 +8,9 @@
 #define bhv_reverse_left 5
 #define bhv_reverse_right 6
 #define ECHO_PIN2 A1
-#define TRIGGER_PIN A2
+#define TRIGGER_PIN A6
 #define TRIGGER_PIN2 A0
-#define ECHO_PIN A3
+#define ECHO_PIN A7
 #define LEFT_BUMPER_PIN A4
 #define RIGHT_BUMPER_PIN A5
 #define LEFT_LIGHT_SENSOR_PIN A6
@@ -18,7 +18,6 @@
 #define TURNING 80 // Turning Speed
 #define SPEED 200  // Sets the nominal speed. Set to any number from 0 - 255.
 #define MAX_DISTANCE 200 // Echo Sensors Max distance
-#define LIGHT_THRESHOLD 250
 
 //Objects
 RedBotAccel accel;
@@ -35,6 +34,9 @@ int Rbumper = RIGHT_BUMPER_PIN;
 
 void setup() {
  	Serial.begin(9600);
+  // while (!Serial) {
+  //   ; // Wait for the serial port to connect
+  // }
   pinMode(Lbumper, INPUT);
   pinMode(Rbumper, INPUT);
 }
@@ -43,11 +45,31 @@ void setup() {
 
 */
 void loop() {
-  robot_state = test_drive(robot_state);
-  robot_state = test_turn(robot_state);
-  robot_state = test_reverse(robot_state);
-  robot_state = test_obstacle(robot_state);
+  // if (Serial.available() > 0) {
+  //   char received = Serial.read(); // Read the incoming byte
+  //   Serial.print("Received: ");
+  //   Serial.println(received); // Print the received byte
+  //   if (received == "F"){
+  //     robot_state = test_drive(robot_state);
+  //   }
+
+  // }
+  unsigned int distance1 = sonar1.ping_cm();
+
+  // Measure distance using the second sensor
+  unsigned int distance2 = sonar2.ping_cm();
+
+  // Print the distances to the serial monitor
+  Serial.print("Distance 1: ");
+  Serial.print(distance1);
+  Serial.print(" cm, ");
+
+  Serial.print("Distance 2: ");
+  Serial.print(distance2);
+  Serial.println(" cm");
+  // robot_state = test_reverse(robot_state);
   dothethings(robot_state);
+  delay(1000);
  }
 
 void drive() {
@@ -73,19 +95,6 @@ void reverse() {
 
 int test_drive(int state){
   state = bhv_drive;
-  return state;
-}
-
-int test_turn(int state){
-  if ((analogRead(light_sensor) > LIGHT_THRESHOLD) && (analogRead(light_sensorr) > LIGHT_THRESHOLD)){
-    state = bhv_drive;
-  }
-  else if (analogRead(light_sensor) > LIGHT_THRESHOLD) {
-    state = bhv_turnr;
-  }
-  else if (analogRead(light_sensorr) > LIGHT_THRESHOLD){
-    state = bhv_turnl;
-  } 
   return state;
 }
 

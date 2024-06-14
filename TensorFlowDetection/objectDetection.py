@@ -21,7 +21,7 @@ clf("./img1.jpg")
 ignore_warnings()
 od_pipe = pipeline("object-detection")
 
-raw_image = Image.open('./img1.jpg')
+raw_image = Image.open('./me.jpg')
 
 plt.imshow(raw_image)
 plt.title("Raw Image")

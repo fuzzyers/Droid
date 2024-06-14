@@ -5,12 +5,12 @@ from pyftdi.ftdi import Ftdi
 import serial
 import time
 
-ser = serial.Serial('COM4', 9600)
+ser = serial.Serial('COM5', 9600)
 time.sleep(2)  
 
 facial_script = "./FacialRecognition/facialrecognition.py"
 python_interpreter = "C:/Users/jacki/anaconda3/python"  #This uses the anaconda interpter as it has access to all my modules
-
+mission = "Jackson"
 def takephoto():
     cap = cv2.VideoCapture(0)
 
@@ -44,7 +44,9 @@ def processphoto():
         print(f"Error during subprocess call: {e}")
     
  
-
+def mission():
+    #if Jackson is Close turn 90deg then project.
+    
 #def movement(direction):
     #If it sees person in facial recognition it will move towards them
     #If the depth mapping says the road is blocked it will take a detour then it will repeat photo

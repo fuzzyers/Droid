@@ -17,10 +17,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 
-# Suppress unnecessary warnings
+# Suppress warnings
 logging.set_verbosity_error()
 
-# Depth Estimation Pipeline
 depth_estimator = pipeline(task="depth-estimation")
 
 def recognize_faces_and_positions(known_image_path, test_image_path):
@@ -34,8 +33,8 @@ def recognize_faces_and_positions(known_image_path, test_image_path):
     
     test_image = face_recognition.load_image_file(test_image_path)
     
-    max_width = 800
-    max_height = 600
+    max_width = 1920
+    max_height = 1080
     
     # This will check the size of the img and resize it if necessary
     original_height, original_width = test_image.shape[:2]
@@ -86,7 +85,6 @@ def recognize_faces_and_positions(known_image_path, test_image_path):
     return results, test_image
 
 def estimate_depth(image_path, face_positions):
-    # Load and display raw image
     raw_image = Image.open(image_path)
     raw_image = raw_image.convert('RGB')
 
@@ -114,9 +112,9 @@ def estimate_depth(image_path, face_positions):
     print(f"Minimum depth (closer objects): {min_depth}")
     print(f"Maximum depth (farther objects): {max_depth}")
 
-    # Tweak to figure out distancing
+    # Distancing numbers change to get desired result
     depth_min_meters = 0.5  
-    depth_max_meters = 10.0  
+    depth_max_meters = 2.0  
 
     for position in face_positions:
         top, right, bottom, left = position['bounding_box']
@@ -135,14 +133,13 @@ def estimate_depth(image_path, face_positions):
         
         print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
 
-# Define paths to the known image and the test image
+# img paths
 known_image_path = "me.jpg"
-test_image_path = "me5.jpg"
+test_image_path = "group.jpg"
 
 # Recognize faces and get their positions
 face_positions, _ = recognize_faces_and_positions(known_image_path, test_image_path)
 
-# Estimate depth and determine proximity of detected faces
 estimate_depth(test_image_path, face_positions)
 
 # Process the results and save to a JSON file
@@ -150,7 +147,7 @@ file_path = "controls.json"
 
 if not os.path.exists(file_path):
     with open(file_path, "w") as json_file:
-        json.dump([], json_file)  # Initialize with an empty list
+        json.dump([], json_file)
 
 with open(file_path, "w") as json_file:
     json.dump(face_positions, json_file, indent=4)
