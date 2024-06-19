@@ -1,6 +1,182 @@
 [
     {
+        "name": "Unknown",
+        "position": "right",
+        "bounding_box": [
+            419,
+            1255,
+            481,
+            1192
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5435588536784053
+    },
+    {
+        "name": "Unknown",
+        "position": "left",
+        "bounding_box": [
+            434,
+            391,
+            478,
+            347
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.6265692301094532
+    },
+    {
+        "name": "Unknown",
+        "position": "right",
+        "bounding_box": [
+            614,
+            1126,
+            666,
+            1074
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5876513049006462
+    },
+    {
+        "name": "Unknown",
+        "position": "center",
+        "bounding_box": [
+            608,
+            970,
+            660,
+            919
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.600846666842699
+    },
+    {
+        "name": "Unknown",
+        "position": "left",
+        "bounding_box": [
+            585,
+            204,
+            647,
+            142
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.9424360543489456
+    },
+    {
         "name": "Jackson",
-        "position": "right"
+        "position": "center",
+        "bounding_box": [
+            444,
+            765,
+            487,
+            722
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5645334180444479
+    },
+    {
+        "name": "Unknown",
+        "position": "left",
+        "bounding_box": [
+            669,
+            370,
+            743,
+            295
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 1.1358483135700226
+    },
+    {
+        "name": "Unknown",
+        "position": "right",
+        "bounding_box": [
+            415,
+            1024,
+            458,
+            981
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5548067055642605
+    },
+    {
+        "name": "Unknown",
+        "position": "center",
+        "bounding_box": [
+            585,
+            778,
+            647,
+            716
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.6401015892624855
+    },
+    {
+        "name": "Unknown",
+        "position": "center",
+        "bounding_box": [
+            450,
+            885,
+            486,
+            849
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5560812912881374
+    },
+    {
+        "name": "Unknown",
+        "position": "left",
+        "bounding_box": [
+            406,
+            491,
+            449,
+            448
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5950048826634884
+    },
+    {
+        "name": "Unknown",
+        "position": "left",
+        "bounding_box": [
+            410,
+            232,
+            454,
+            189
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.6579084061086178
+    },
+    {
+        "name": "Unknown",
+        "position": "center",
+        "bounding_box": [
+            429,
+            631,
+            481,
+            579
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.578781608492136
+    },
+    {
+        "name": "Unknown",
+        "position": "right",
+        "bounding_box": [
+            377,
+            1186,
+            440,
+            1123
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 0.5422630393877625
+    },
+    {
+        "name": "Unknown",
+        "position": "center",
+        "bounding_box": [
+            602,
+            619,
+            677,
+            544
+        ],
+        "proximity": "close",
+        "estimated_distance_meters": 1.0262404680252075
     }
 ]

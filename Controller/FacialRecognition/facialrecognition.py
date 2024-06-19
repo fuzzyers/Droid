@@ -44,22 +44,17 @@ def recognize_faces_and_positions(known_image_path, test_image_path):
             position = "center"
         else:
             position = "right"
-        
-        results.append({
-            "name": name,
-            "position": position
-        })
     
-    test_image = cv2.cvtColor(test_image, cv2.COLOR_RGB2BGR)
+    #test_image = cv2.cvtColor(test_image, cv2.COLOR_RGB2BGR)
     
     # Display the results
-    for (top, right, bottom, left), name in zip(face_locations, [result['name'] for result in results]):
-        cv2.rectangle(test_image, (left, top), (right, bottom), (0, 0, 255), 2)
-        cv2.rectangle(test_image, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-        font = cv2.FONT_HERSHEY_DUPLEX
-        cv2.putText(test_image, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+    #for (top, right, bottom, left), name in zip(face_locations, [result['name'] for result in results]):
+     #   cv2.rectangle(test_image, (left, top), (right, bottom), (0, 0, 255), 2)
+      #  cv2.rectangle(test_image, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
+       # font = cv2.FONT_HERSHEY_DUPLEX
+       # cv2.putText(test_image, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
     
-    cv2.imshow('Test Image', test_image)
+   # cv2.imshow('Test Image', test_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
@@ -73,7 +68,6 @@ if __name__ == "__main__":
     results = recognize_faces_and_positions(known_image_path, test_image_path)
 
     # Process the results and save to a JSON file
-    file_path = "controls.json"
 
     for result in results:
         print(f"{result['name']} is in the {result['position']}")

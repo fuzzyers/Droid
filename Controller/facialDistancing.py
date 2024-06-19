@@ -16,30 +16,34 @@ from transformers.utils import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
+import sys
 
 # Suppress warnings
 logging.set_verbosity_error()
 
 depth_estimator = pipeline(task="depth-estimation")
 
-def recognize_faces_and_positions(known_image_path, test_image_path):
-    your_image = face_recognition.load_image_file(known_image_path)
-    your_face_encoding = face_recognition.face_encodings(your_image)[0]
-    
-    known_face_encodings = [your_face_encoding]
-    known_face_names = ["Jackson"]
-    
+# KNOWN_FACE_NAMES = "Jackson"
+# KNOWN_FACE_PATH = "me.jpg"
+# TEST_IMAGE_PATH = "group.jpg"
+
+# known_image = face_recognition.load_image_file(KNOWN_FACE_PATH)
+# known_face_encoding = face_recognition.face_encodings(known_image)[0]
+# KNOWN_FACE_ENCODINGS = [known_face_encoding]
+
+def recognize_faces_and_positions(known_image_path, test_image_path, known_face_encodings, known_face_names):
+    MAX_WIDTH = 1920
+    MAX_HEIGHT = 1080
     results = []
     
     test_image = face_recognition.load_image_file(test_image_path)
     
-    max_width = 1920
-    max_height = 1080
     
     # This will check the size of the img and resize it if necessary
     original_height, original_width = test_image.shape[:2]
-    if original_width > max_width or original_height > max_height:
-        scaling_factor = min(max_width / original_width, max_height / original_height)
+    
+    if original_width > MAX_WIDTH or original_height > MAX_HEIGHT:
+        scaling_factor = min(MAX_WIDTH / original_width, MAX_HEIGHT / original_height)
         test_image = cv2.resize(test_image, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
     
     height, width = test_image.shape[:2]
@@ -79,78 +83,81 @@ def recognize_faces_and_positions(known_image_path, test_image_path):
         cv2.putText(test_image, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
     cv2.imshow('Test Image', test_image)
     cv2.waitKey(0)
-    ####
     cv2.destroyAllWindows()
     
     return results, test_image
 
-def estimate_depth(image_path, face_positions):
-    raw_image = Image.open(image_path)
-    raw_image = raw_image.convert('RGB')
+# def estimate_depth(image_path, face_positions):
+#     raw_image = Image.open(image_path)
+#     raw_image = raw_image.convert('RGB')
 
-    # Get depth estimation
-    output = depth_estimator(raw_image)
+#     # Get depth estimation
+#     output = depth_estimator(raw_image)
 
-    # Interpolate depth to match the original image size
-    prediction = torch.nn.functional.interpolate(
-        output["predicted_depth"].unsqueeze(1),
-        size=raw_image.size[::-1],
-        mode="bicubic",
-        align_corners=False,
-    )
+#     # Interpolate depth to match the original image size
+#     prediction = torch.nn.functional.interpolate(
+#         output["predicted_depth"].unsqueeze(1),
+#         size=raw_image.size[::-1],
+#         mode="bicubic",
+#         align_corners=False,
+#     )
 
-    # Convert to numpy array
-    output = prediction.squeeze().numpy()
-    formatted = (output * 255 / np.max(output)).astype("uint8")
-    depth = Image.fromarray(formatted)
+#     # Convert to numpy array
+#     output = prediction.squeeze().numpy()
+#     formatted = (output * 255 / np.max(output)).astype("uint8")
+#     depth = Image.fromarray(formatted)
 
-    # Depth values for analysis
-    depth_values = output
+#     # Depth values for analysis
+#     depth_values = output
 
-    min_depth = np.min(depth_values)
-    max_depth = np.max(depth_values)
-    print(f"Minimum depth (closer objects): {min_depth}")
-    print(f"Maximum depth (farther objects): {max_depth}")
+#     min_depth = np.min(depth_values)
+#     max_depth = np.max(depth_values)
+#     print(f"Minimum depth (closer objects): {min_depth}")
+#     print(f"Maximum depth (farther objects): {max_depth}")
 
-    # Distancing numbers change to get desired result
-    depth_min_meters = 0.5  
-    depth_max_meters = 2.0  
+#     # Distancing numbers change to get desired result
+#     depth_min_meters = 0.5  
+#     depth_max_meters = 2.0  
 
-    for position in face_positions:
-        top, right, bottom, left = position['bounding_box']
-        face_depth_region = depth_values[top:bottom, left:right]
-        mean_face_depth = np.mean(face_depth_region)
+#     for position in face_positions:
+#         top, right, bottom, left = position['bounding_box']
+#         face_depth_region = depth_values[top:bottom, left:right]
+#         mean_face_depth = np.mean(face_depth_region)
 
-        estimated_distance = depth_min_meters + (depth_max_meters - depth_min_meters) * ((mean_face_depth - min_depth) / (max_depth - min_depth))
+#         estimated_distance = depth_min_meters + (depth_max_meters - depth_min_meters) * ((mean_face_depth - min_depth) / (max_depth - min_depth))
 
-        if mean_face_depth < (min_depth + max_depth) / 2:
-            proximity = "close"
-        else:
-            proximity = "far away"
+#         if mean_face_depth < (min_depth + max_depth) / 2:
+#             proximity = "close"
+#         else:
+#             proximity = "far away"
         
-        position['proximity'] = proximity
-        position['estimated_distance_meters'] = estimated_distance
+#         position['proximity'] = proximity
+#         position['estimated_distance_meters'] = estimated_distance
         
-        print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
-
-# img paths
-known_image_path = "me.jpg"
-test_image_path = "group.jpg"
+#         print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
 
 # Recognize faces and get their positions
-face_positions, _ = recognize_faces_and_positions(known_image_path, test_image_path)
 
-estimate_depth(test_image_path, face_positions)
+# estimate_depth(test_image_path, face_positions)
+# face_positions, _ = recognize_faces_and_positions(KNOWN_FACE_PATH, TEST_IMAGE_PATH, KNOWN_FACE_ENCODINGS, KNOWN_FACE_NAMES)
 
-# Process the results and save to a JSON file
-file_path = "controls.json"
 
-if not os.path.exists(file_path):
-    with open(file_path, "w") as json_file:
-        json.dump([], json_file)
 
-with open(file_path, "w") as json_file:
-    json.dump(face_positions, json_file, indent=4)
+if __name__ == "__main__":
+    # Command line arguments for known and test image paths
+    KNOWN_FACE_NAMES = [sys.argv[1]]
+    KNOWN_FACE_PATH = sys.argv[2]
+    TEST_IMAGE_PATH = sys.argv[3]
+    
+    known_image = face_recognition.load_image_file(KNOWN_FACE_PATH)
+    known_face_encoding = face_recognition.face_encodings(known_image)[0]
+    KNOWN_FACE_ENCODINGS = [known_face_encoding]
+        
+    face_positions, _ = recognize_faces_and_positions(KNOWN_FACE_PATH, TEST_IMAGE_PATH, KNOWN_FACE_ENCODINGS, KNOWN_FACE_NAMES)
 
-for result in face_positions:
-    print(f"{result['name']} is in the {result['position']}")
+    for result in face_positions:
+        if result["name"] in KNOWN_FACE_NAMES:
+            print(f"{result['name']} is in the {result['position']}")
+
+
+
