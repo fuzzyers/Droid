@@ -63,7 +63,10 @@ class StateMachine:
 
     def STATE_PROCESS_PHOTO(self):
         found, position = self.process_photo()
-        self.last_known_position = position
+        
+        if position != None:
+            self.last_known_position = position
+            
         if found:
             if found_twice == 2:
                 self.transition_mission()
@@ -76,15 +79,38 @@ class StateMachine:
         move_forward()
         self.transition_take_photo()
 
-    def STATE_SEARCH(self):
-        # Implement your search logic here
-        print("Searching...")
+    def STATE_MOVE_TOWARDS_LEFT(self):
+        move_forward()
         self.transition_take_photo()
 
-    def STATE_MISSION(self):
+    def STATE_MOVE_TOWARDS_RIGHT(self):
+        move_forward()
+        self.transition_take_photo()
+        
+    def STATE_SEARCH(self):
+        # Implement your search logic here
+        print("Searching...", self.last_known_position)
+        
+        if self.last_known_position == "left":
+            print("Turning: Left") #R2D2 Will rotate his head
+            #Take Another photo then turn head back
+        elif self.last_known_position == "right":
+            print("Turning: Right")
+        else:
+            print("Send It forward")
+            
+        self.last_known_position = None
+        self.transition_take_photo()
+
+    def STATE_MISSION(self, position):
+        print("Mission:", position)
+        
         self.mission_task()
         self.STATE_IDLE()
 
+    
+
+    #Transitions
     def transition_start(self):
         self.state = self.STATE_TAKE_PHOTO
         self.state()
@@ -95,10 +121,13 @@ class StateMachine:
 
     def transition_move_towards(self):
         if self.last_known_position == "left":
+            print("Moving: Left")
             self.state = self.STATE_MOVE_TOWARDS_LEFT
         elif self.last_known_position == "right":
+            print("Moving: Right")
             self.state = self.STATE_MOVE_TOWARDS_RIGHT
         else:
+            print("Moving: Straight Forward")
             self.state = self.STATE_MOVE_TOWARDS
         self.state()
 
@@ -114,6 +143,8 @@ class StateMachine:
         self.state = self.STATE_MISSION
         self.state()
 
+
+    #Helper Functions
     def take_photo(self):
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
@@ -156,6 +187,8 @@ class StateMachine:
         # Example mission task: Turn 90 degrees and project if Jackson is close
         pass
 
+
+    #Run Loop
     def run(self):
         while True:
             self.state()
