@@ -4,7 +4,7 @@ import serial
 import time
 
 # Constants
-SERIAL_PORT = 'COM5'
+SERIAL_PORT = 'COM4'
 BAUD_RATE = 9600
 FACIAL_SCRIPT = "./facialDistancing.py"
 PYTHON_INTERPRETER = "C:/Users/jacki/anaconda3/python"
@@ -27,7 +27,7 @@ STATE_MISSION = 'MISSION'
 STATE_SEARCH = 'SEARCH'
 
 # Initialize serial communication
-# ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
+ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
 time.sleep(2)
 last_known_position = ""
 found_twice = 0
@@ -92,18 +92,22 @@ class StateMachine:
         print("Searching...", self.last_known_position)
         
         if self.last_known_position == "left":
+            ser.write(b'q')
             print("Turning: Left") #R2D2 Will rotate his head
             #Take Another photo then turn head back
         elif self.last_known_position == "right":
+            ser.write(b'e')
             print("Turning: Right")
         else:
             print("Send It forward")
+            ser.write(b'w')
+
             
         self.last_known_position = None
         self.transition_take_photo()
 
-    def STATE_MISSION(self, position):
-        print("Mission:", position)
+    def STATE_MISSION(self):
+        print("Mission:")
         
         self.mission_task()
         self.STATE_IDLE()
@@ -193,6 +197,5 @@ class StateMachine:
         while True:
             self.state()
 
-# Example usage
 machine = StateMachine()
 machine.run()
