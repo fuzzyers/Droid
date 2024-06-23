@@ -10,8 +10,8 @@ const int motorPin2 = 9;
 const int motorPin3 = 10;
 const int motorPin4 = 11;
 
-const int trigPin = 12;
-const int echoPin = 13;
+const int trigPin = 20;
+const int echoPin = 19;
 
 // int directionPin1 = 12;
 // int pwmPin1 = 3;
@@ -35,13 +35,13 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
-  pinMode(directionPin1, OUTPUT);
-  pinMode(pwmPin1, OUTPUT);
-  pinMode(brakePin1, OUTPUT);
+  // pinMode(directionPin1, OUTPUT);
+  // pinMode(pwmPin1, OUTPUT);
+  // pinMode(brakePin1, OUTPUT);
 
-  pinMode(directionPin2, OUTPUT);
-  pinMode(pwmPin2, OUTPUT);
-  pinMode(brakePin2, OUTPUT);
+  // pinMode(directionPin2, OUTPUT);
+  // pinMode(pwmPin2, OUTPUT);
+  // pinMode(brakePin2, OUTPUT);
 
   initialize();
 
@@ -71,11 +71,6 @@ void loop() {
     if (incomingByte == 'o'){
       openHand();
     }
-
-    if (incomingByte == 'w'){
-      openHand();
-    }
-
   }
 
   if (stepperLock == false){
@@ -91,18 +86,24 @@ void loop() {
   delay(1000);  
 }
 
-void initialize(){
-  moveServoTo(0, 1000);  
-}
 
 void closeHand(){
+  unsigned long startTime = millis();
   myStepper.setSpeed(30);
-  myStepper.step(-stepsPerRevolution);
-}
+
+  int steps = stepsPerRevolution;  
+  while (millis() - startTime < 2000) {
+    myStepper.step(-steps);
+  }}
 
 void openHand(){
+  unsigned long startTime = millis();
   myStepper.setSpeed(30);
-  myStepper.step(stepsPerRevolution);
+
+  int steps = stepsPerRevolution;  
+  while (millis() - startTime < 2000) {
+    myStepper.step(steps);
+  }
 }
 
 void moveServoTo(int angle, int delayTime) {
@@ -126,15 +127,20 @@ long readUltrasonicDistance(int trigPin, int echoPin) {
 void controlMotor(bool direction, int speed, int duration) {
   // Set the direction
   if (direction == false) {
-    digitalWrite(directionPin, LOW);
+    //digitalWrite(directionPin, LOW);
   } else {
-    digitalWrite(directionPin, HIGH);
+    //digitalWrite(directionPin, HIGH);
   }
 
-  digitalWrite(brakePin, LOW);
-  analogWrite(pwmPin, speed);
+  //digitalWrite(brakePin, LOW);
+  //analogWrite(pwmPin, speed);
   delay(duration);
-  digitalWrite(brakePin, HIGH);
-  analogWrite(pwmPin, 0);
+  //digitalWrite(brakePin, HIGH);
+  //analogWrite(pwmPin, 0);
   delay(200);
+}
+
+void initialize(){
+  moveServoTo(0, 1000);  
+  openHand();
 }
