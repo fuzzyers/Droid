@@ -7,13 +7,16 @@ import time
 SERIAL_PORT = 'COM4'
 BAUD_RATE = 9600
 FACIAL_SCRIPT = "./facialDistancing.py"
+OBJECT_DETECTION_SCRIPT = "./objectDetection.py"
 PYTHON_INTERPRETER = "C:/Users/jacki/anaconda3/python"
 KNOWN_IMAGE_PATH = "me.jpg"
 IMAGE_PATH = "./group.jpg"
 MISSION = [{
     "PERSON": "Jackson",
     "PERSON_IMG": "me.jpg",
-    "GOAL": "FIND"
+    "GOAL": "bottle",
+    "GOAL_COMPLETED": False,
+    "MISSION_COMPLETED": False
 }]
 
 # States
@@ -32,17 +35,9 @@ time.sleep(2)
 last_known_position = ""
 found_twice = 0
 
-def move_forward():
-    # ser.write(b'F')
-    # print("Sent 'F' to the Arduino")
-    time.sleep(0.1)
-    # while ser.in_waiting > 0:
-    #     response = ser.readline().decode('utf-8').strip()
-    #     print("Arduino responded:", response)
-
 class StateMachine:
     def __init__(self):
-        self.state = self.STATE_IDLE
+        self.state = self.STATE_PROCESS_PHOTO
         self.missions = [MISSION]  # Example missions list
         self.last_known_position = None
 
@@ -62,29 +57,38 @@ class StateMachine:
             self.STATE_IDLE()
 
     def STATE_PROCESS_PHOTO(self):
-        found, position = self.process_photo()
-        
-        if position != None:
-            self.last_known_position = position
-            
-        if found:
-            if found_twice == 2:
-                self.transition_mission()
-            else:
-                self.transition_move_towards()
+        if MISSION[0]["GOAL_COMPLETED"] == False:
+            print("GOALY")
+            self.process_photo_object()
         else:
-            self.transition_search()
+            print("PERSON")
+            found, position = self.process_photo()
+            
+            if position != None:
+                self.last_known_position = position
+                
+            if found:
+                if found_twice == 2:
+                    self.transition_mission()
+                else:
+                    self.transition_move_towards()
+            else:
+                self.transition_search()
+            
 
     def STATE_MOVE_TOWARDS(self):
-        move_forward()
+        print("Moving Forward")
+        ser.write(b'w')
         self.transition_take_photo()
 
     def STATE_MOVE_TOWARDS_LEFT(self):
-        move_forward()
+        print("Strafing Left")
+        ser.write(b'a')
         self.transition_take_photo()
 
     def STATE_MOVE_TOWARDS_RIGHT(self):
-        move_forward()
+        print("Strafing Left")
+        ser.write(b'd')
         self.transition_take_photo()
         
     def STATE_SEARCH(self):
@@ -186,6 +190,17 @@ class StateMachine:
         except subprocess.CalledProcessError as e:
             print(f"Error during subprocess call: {e}")
             return False, None
+
+    def process_photo_object(self):
+        try:
+            print("TEST")
+            IMAGE_PATH = "./bottle.jpg"
+            result = subprocess.run([PYTHON_INTERPRETER, OBJECT_DETECTION_SCRIPT, IMAGE_PATH, "bottle"], check=True, capture_output=True, text=True)
+            output = result.stdout.strip()
+            print(output)
+        except subprocess.CalledProcessError as e:
+            print(f"Error during subprocess call: {e}")
+
 
     def mission_task(self):
         # Example mission task: Turn 90 degrees and project if Jackson is close

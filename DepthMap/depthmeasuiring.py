@@ -100,7 +100,7 @@ def determine_movement_direction(depth_values, threshold):
     """
     # Define regions of interest
     height, width = depth_values.shape
-    center_region = depth_values[:, width//3:2*width//]
+    center_region = depth_values[:, width//3:2*width//3]
     left_region = depth_values[:, :width//3]
     right_region = depth_values[:, 2*width//3:]
 
@@ -123,17 +123,3 @@ def determine_movement_direction(depth_values, threshold):
 # Decision Making for Robot Navigation
 direction = determine_movement_direction(depth_values, threshold)
 print(f"Recommended direction for the robot: {direction}")
-
-# Display the mean depths for debug purposes
-height, width = depth_values.shape
-center_region = depth_values[:, width//3:2*width//3]
-left_region = depth_values[:, :width//3]
-right_region = depth_values[:, 2*width//3:]
-
-mean_center_depth = np.mean(center_region)
-mean_left_depth = np.mean(left_region)
-mean_right_depth = np.mean(right_region)
-
-print(f"Mean Center Depth: {mean_center_depth}")
-print(f"Mean Left Depth: {mean_left_depth}")
-print(f"Mean Right Depth: {mean_right_depth}")

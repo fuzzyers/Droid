@@ -12,17 +12,16 @@ from transformers.utils import logging
 from helper import ignore_warnings
 from PIL import Image
 import matplotlib.pyplot as plt
+import sys
 
-mission_label = "bottle"
+IMG = sys.argv[1]
+mission_label = sys.argv[2]
 logging.set_verbosity_error()
-
-clf = pipeline("image-classification", model="google/vit-base-patch16-224")
-clf("./img1.jpg")
 
 ignore_warnings()
 od_pipe = pipeline("object-detection")
 
-raw_image = Image.open('./bottle.jpg')
+raw_image = Image.open(IMG)
 
 plt.imshow(raw_image)
 plt.title("Raw Image")

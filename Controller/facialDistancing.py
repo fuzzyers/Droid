@@ -23,14 +23,6 @@ logging.set_verbosity_error()
 
 depth_estimator = pipeline(task="depth-estimation")
 
-# KNOWN_FACE_NAMES = "Jackson"
-# KNOWN_FACE_PATH = "me.jpg"
-# TEST_IMAGE_PATH = "group.jpg"
-
-# known_image = face_recognition.load_image_file(KNOWN_FACE_PATH)
-# known_face_encoding = face_recognition.face_encodings(known_image)[0]
-# KNOWN_FACE_ENCODINGS = [known_face_encoding]
-
 def recognize_faces_and_positions(known_image_path, test_image_path, known_face_encodings, known_face_names):
     MAX_WIDTH = 1920
     MAX_HEIGHT = 1080
@@ -87,59 +79,58 @@ def recognize_faces_and_positions(known_image_path, test_image_path, known_face_
     
     return results, test_image
 
-# def estimate_depth(image_path, face_positions):
-#     raw_image = Image.open(image_path)
-#     raw_image = raw_image.convert('RGB')
+def estimate_depth(image_path, face_positions):
+    raw_image = Image.open(image_path)
+    raw_image = raw_image.convert('RGB')
 
-#     # Get depth estimation
-#     output = depth_estimator(raw_image)
+    # Get depth estimation
+    output = depth_estimator(raw_image)
 
-#     # Interpolate depth to match the original image size
-#     prediction = torch.nn.functional.interpolate(
-#         output["predicted_depth"].unsqueeze(1),
-#         size=raw_image.size[::-1],
-#         mode="bicubic",
-#         align_corners=False,
-#     )
+    # Interpolate depth to match the original image size
+    prediction = torch.nn.functional.interpolate(
+        output["predicted_depth"].unsqueeze(1),
+        size=raw_image.size[::-1],
+        mode="bicubic",
+        align_corners=False,
+    )
 
-#     # Convert to numpy array
-#     output = prediction.squeeze().numpy()
-#     formatted = (output * 255 / np.max(output)).astype("uint8")
-#     depth = Image.fromarray(formatted)
+    # Convert to numpy array
+    output = prediction.squeeze().numpy()
+    formatted = (output * 255 / np.max(output)).astype("uint8")
+    depth = Image.fromarray(formatted)
 
-#     # Depth values for analysis
-#     depth_values = output
+    # Depth values for analysis
+    depth_values = output
 
-#     min_depth = np.min(depth_values)
-#     max_depth = np.max(depth_values)
-#     print(f"Minimum depth (closer objects): {min_depth}")
-#     print(f"Maximum depth (farther objects): {max_depth}")
+    min_depth = np.min(depth_values)
+    max_depth = np.max(depth_values)
+    print(f"Minimum depth (closer objects): {min_depth}")
+    print(f"Maximum depth (farther objects): {max_depth}")
 
-#     # Distancing numbers change to get desired result
-#     depth_min_meters = 0.5  
-#     depth_max_meters = 2.0  
+    # Distancing numbers change to get desired result
+    depth_min_meters = 0.5  
+    depth_max_meters = 2.0  
 
-#     for position in face_positions:
-#         top, right, bottom, left = position['bounding_box']
-#         face_depth_region = depth_values[top:bottom, left:right]
-#         mean_face_depth = np.mean(face_depth_region)
+    for position in face_positions:
+        top, right, bottom, left = position['bounding_box']
+        face_depth_region = depth_values[top:bottom, left:right]
+        mean_face_depth = np.mean(face_depth_region)
 
-#         estimated_distance = depth_min_meters + (depth_max_meters - depth_min_meters) * ((mean_face_depth - min_depth) / (max_depth - min_depth))
+        estimated_distance = depth_min_meters + (depth_max_meters - depth_min_meters) * ((mean_face_depth - min_depth) / (max_depth - min_depth))
 
-#         if mean_face_depth < (min_depth + max_depth) / 2:
-#             proximity = "close"
-#         else:
-#             proximity = "far away"
+        if mean_face_depth < (min_depth + max_depth) / 2:
+            proximity = "close"
+        else:
+            proximity = "far away"
         
-#         position['proximity'] = proximity
-#         position['estimated_distance_meters'] = estimated_distance
+        position['proximity'] = proximity
+        position['estimated_distance_meters'] = estimated_distance
         
-#         print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
+        print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
+        return proximity
 
 # Recognize faces and get their positions
 
-# estimate_depth(test_image_path, face_positions)
-# face_positions, _ = recognize_faces_and_positions(KNOWN_FACE_PATH, TEST_IMAGE_PATH, KNOWN_FACE_ENCODINGS, KNOWN_FACE_NAMES)
 
 
 
@@ -148,13 +139,15 @@ if __name__ == "__main__":
     KNOWN_FACE_NAMES = [sys.argv[1]]
     KNOWN_FACE_PATH = sys.argv[2]
     TEST_IMAGE_PATH = sys.argv[3]
+    TEST_IMAGE_PATH = "./me.jpg"
     
     known_image = face_recognition.load_image_file(KNOWN_FACE_PATH)
     known_face_encoding = face_recognition.face_encodings(known_image)[0]
     KNOWN_FACE_ENCODINGS = [known_face_encoding]
         
     face_positions, _ = recognize_faces_and_positions(KNOWN_FACE_PATH, TEST_IMAGE_PATH, KNOWN_FACE_ENCODINGS, KNOWN_FACE_NAMES)
-
+    depth = estimate_depth(TEST_IMAGE_PATH, face_positions)
+    print(depth)
     for result in face_positions:
         if result["name"] in KNOWN_FACE_NAMES:
             print(f"{result['name']} is in the {result['position']}")

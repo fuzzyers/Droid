@@ -2,29 +2,28 @@
 #include <Stepper.h>
 
 const int servoPin = 7;
-const int value = 3;
 const int stepsPerRevolution = 64;
 
-const int motorPin1 = 8;
-const int motorPin2 = 9;
-const int motorPin3 = 10;
-const int motorPin4 = 11;
+const int motorPin1 = 2;
+const int motorPin2 = 4;
+const int motorPin3 = 5;
+const int motorPin4 = 6;
 
 const int trigPin = 20;
 const int echoPin = 19;
 
-// int directionPin1 = 12;
-// int pwmPin1 = 3;
-// int brakePin1 = 9;
+int directionPin1 = 12;
+int pwmPin1 = 3;
+int brakePin1 = 9;
 
-// // uncomment if using channel B, and remove above definitions
-// int directionPin2 = 13;
-// int pwmPin2 = 11;
-// int brakePin2 = 8;
+// uncomment if using channel B, and remove above definitions
+int directionPin2 = 13;
+int pwmPin2 = 11;
+int brakePin2 = 8;
 
 
 Servo myServo;
-Stepper myStepper = Stepper(stepsPerRevolution, motorPin1, motorPin3, motorPin2, motorPin4);
+Stepper myStepper = Stepper(stepsPerRevolution, motorPin1, motorPin2, motorPin3, motorPin4);
 
 boolean stepperLock = true;
 
@@ -35,13 +34,13 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
-  // pinMode(directionPin1, OUTPUT);
-  // pinMode(pwmPin1, OUTPUT);
-  // pinMode(brakePin1, OUTPUT);
+  pinMode(directionPin1, OUTPUT);
+  pinMode(pwmPin1, OUTPUT);
+  pinMode(brakePin1, OUTPUT);
 
-  // pinMode(directionPin2, OUTPUT);
-  // pinMode(pwmPin2, OUTPUT);
-  // pinMode(brakePin2, OUTPUT);
+  pinMode(directionPin2, OUTPUT);
+  pinMode(pwmPin2, OUTPUT);
+  pinMode(brakePin2, OUTPUT);
 
   initialize();
 
@@ -70,6 +69,29 @@ void loop() {
     
     if (incomingByte == 'o'){
       openHand();
+    }
+
+    //Move Forwards
+    if (incomingByte == 'w'){
+      controlMotor(false, 100, 1000, true, 100);
+    }
+
+    //Strafe Left
+    if (incomingByte == 'a'){
+      controlMotor(false, 100, 1000, true, 70);
+    }
+
+    //Strafe Right
+    if (incomingByte == 'd'){
+      controlMotor(false, 70, 1000, true, 100);
+    }
+
+    if (incomingByte == 'z'){
+      controlMotor(false, 100, 1000, false, 100);
+    }
+
+    if (incomingByte == 'z'){
+      controlMotor(false, 100, 1000, false, 100);
     }
   }
 
@@ -124,23 +146,36 @@ long readUltrasonicDistance(int trigPin, int echoPin) {
   return distance;
 }
 
-void controlMotor(bool direction, int speed, int duration) {
+
+//Direction Pins will also be affected by polarisation
+void controlMotor(bool direction1, int speed1, int duration, bool direction2, int speed2) {
   // Set the direction
-  if (direction == false) {
-    //digitalWrite(directionPin, LOW);
+  if (direction1 == false) {
+    digitalWrite(directionPin1, LOW);
   } else {
-    //digitalWrite(directionPin, HIGH);
+    digitalWrite(directionPin1, HIGH);
+  }
+  if (direction2 == false) {
+    digitalWrite(directionPin2, LOW);
+  } else {
+    digitalWrite(directionPin2, HIGH);
   }
 
-  //digitalWrite(brakePin, LOW);
-  //analogWrite(pwmPin, speed);
+  digitalWrite(brakePin1, LOW);
+  digitalWrite(brakePin2, LOW);
+  analogWrite(pwmPin1, speed1);
+  analogWrite(pwmPin2, speed2);
   delay(duration);
-  //digitalWrite(brakePin, HIGH);
-  //analogWrite(pwmPin, 0);
+  digitalWrite(brakePin1, HIGH);
+  digitalWrite(brakePin2, HIGH);
+  analogWrite(pwmPin1, 0);
+  analogWrite(pwmPin2, 0);
   delay(200);
 }
 
 void initialize(){
   moveServoTo(0, 1000);  
-  openHand();
+  // openHand();
+  controlMotor(false, 100, 1000, true, 70);
+  closeHand();
 }
