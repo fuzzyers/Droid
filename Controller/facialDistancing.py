@@ -129,17 +129,14 @@ def estimate_depth(image_path, face_positions):
         print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
         return proximity
 
-# Recognize faces and get their positions
 
 
 
 
 if __name__ == "__main__":
-    # Command line arguments for known and test image paths
     KNOWN_FACE_NAMES = [sys.argv[1]]
     KNOWN_FACE_PATH = sys.argv[2]
     TEST_IMAGE_PATH = sys.argv[3]
-    TEST_IMAGE_PATH = "./me.jpg"
     
     known_image = face_recognition.load_image_file(KNOWN_FACE_PATH)
     known_face_encoding = face_recognition.face_encodings(known_image)[0]

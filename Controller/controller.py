@@ -37,18 +37,19 @@ found_twice = 0
 
 class StateMachine:
     def __init__(self):
-        self.state = self.STATE_PROCESS_PHOTO
-        self.missions = [MISSION]  # Example missions list
+        self.state = self.STATE_IDLE
+        self.missions = MISSION
         self.last_known_position = None
 
     def STATE_IDLE(self):
         print("State: Idle")
         
         # While missions exist
-        if self.missions:
+        if self.missions and not all(mission["MISSION_COMPLETED"] for mission in self.missions):
             self.transition_start()
         else:
-            print("No missions left.")
+            print("All missions completed.")
+            self.stop()
 
     def STATE_TAKE_PHOTO(self):
         if self.take_photo():
@@ -92,7 +93,6 @@ class StateMachine:
         self.transition_take_photo()
         
     def STATE_SEARCH(self):
-        # Implement your search logic here
         print("Searching...", self.last_known_position)
         
         if self.last_known_position == "left":
@@ -105,6 +105,8 @@ class StateMachine:
         else:
             print("Send It forward")
             ser.write(b'w')
+            
+        self.last_known_position = None
 
             
         self.last_known_position = None
@@ -197,20 +199,29 @@ class StateMachine:
             IMAGE_PATH = "./bottle.jpg"
             result = subprocess.run([PYTHON_INTERPRETER, OBJECT_DETECTION_SCRIPT, IMAGE_PATH, "bottle"], check=True, capture_output=True, text=True)
             output = result.stdout.strip()
-            print(output)
+            last_word = output.split()[-1] if output.split() else None
+            print(last_word)
+            if last_word == MISSION[0]["GOAL"]:
+                MISSION[0]["GOAL_COMPLETED"] = True
+                print(MISSION[0]["GOAL_COMPLETED"])
         except subprocess.CalledProcessError as e:
             print(f"Error during subprocess call: {e}")
 
 
     def mission_task(self):
-        # Example mission task: Turn 90 degrees and project if Jackson is close
-        pass
+        MISSION[0]["MISSION_COMPLETED"] = True
 
 
     #Run Loop
     def run(self):
         while True:
+            if not self.missions or all(mission["MISSION_COMPLETED"] for mission in self.missions):
+                print("All missions completed. Exiting...")
+                break
             self.state()
+
+    def stop(self):
+        self.state = self.STATE_IDLE
 
 machine = StateMachine()
 machine.run()

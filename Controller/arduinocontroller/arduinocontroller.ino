@@ -12,15 +12,20 @@ const int motorPin4 = 6;
 const int trigPin = 20;
 const int echoPin = 19;
 
-int directionPin1 = 12;
-int pwmPin1 = 3;
-int brakePin1 = 9;
+const int speaker = 21;
 
-// uncomment if using channel B, and remove above definitions
-int directionPin2 = 13;
-int pwmPin2 = 11;
-int brakePin2 = 8;
+const int directionPin1 = 12;
+const int pwmPin1 = 3;
+const int brakePin1 = 9;
 
+const int directionPin2 = 13;
+const int pwmPin2 = 11;
+const int brakePin2 = 8;
+
+const int buttonPin =10;
+int buttonState = 0;
+
+int scriptStarted = 0;
 
 Servo myServo;
 Stepper myStepper = Stepper(stepsPerRevolution, motorPin1, motorPin2, motorPin3, motorPin4);
@@ -41,6 +46,9 @@ void setup() {
   pinMode(directionPin2, OUTPUT);
   pinMode(pwmPin2, OUTPUT);
   pinMode(brakePin2, OUTPUT);
+
+  pinMode(buttonPin, INPUT);
+  pinMode(speaker, OUTPUT);
 
   initialize();
 
@@ -141,7 +149,7 @@ long readUltrasonicDistance(int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW);
 
   long duration = pulseIn(echoPin, HIGH);
-  long distance = duration * 0.034 / 2; // Convert to cm
+  long distance = duration * 0.034 / 2; // Converts to cm
 
   return distance;
 }
@@ -149,7 +157,6 @@ long readUltrasonicDistance(int trigPin, int echoPin) {
 
 //Direction Pins will also be affected by polarisation
 void controlMotor(bool direction1, int speed1, int duration, bool direction2, int speed2) {
-  // Set the direction
   if (direction1 == false) {
     digitalWrite(directionPin1, LOW);
   } else {
@@ -173,9 +180,40 @@ void controlMotor(bool direction1, int speed1, int duration, bool direction2, in
   delay(200);
 }
 
+void makeR2D2Noise() {
+  int frequencies[] = {800, 600, 1000, 700, 1200, 500, 900, 1100, 1300};
+  int durations[] = {100, 150, 80, 120, 100, 90, 110, 70, 130};
+
+  for (int i = 0; i < 9; i++) {
+    tone(speaker, frequencies[i], durations[i]);
+    delay(durations[i] + 20); 
+  }
+
+  // Turn off the sound
+  noTone(speaker);
+}
+
 void initialize(){
-  moveServoTo(0, 1000);  
-  // openHand();
-  controlMotor(false, 100, 1000, true, 70);
-  closeHand();
+  moveServoTo(0, 1000);  // Reset head to face forward
+  makeR2D2Noise(); //Startup sound
+  // controlMotor(false, 100, 1000, true, 70); // For testing motors are working on initialization
+
+  //Run Script
+  while (true){
+      long distance = readUltrasonicDistance(trigPin, echoPin);
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+    if (scriptStarted == 0){
+      buttonState = digitalRead(buttonPin);
+    }
+
+    if (buttonState == HIGH) {
+      Serial.println("RUN_SCRIPT");
+      scriptStarted == 1;
+      buttonState == LOW;
+      break;
+    }
+    delay(100);
+  }
 }
