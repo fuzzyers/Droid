@@ -1,0 +1,14 @@
+[Unit]
+Description=button
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/envDroid/python /home/pi/Desktop/Droid/Controller/button_script.py
+WorkingDirectory=/home/pi/Desktop/Droid/Controller
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

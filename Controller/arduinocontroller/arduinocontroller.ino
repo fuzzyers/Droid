@@ -28,7 +28,7 @@ int buttonState = 0;
 int scriptStarted = 0;
 
 Servo myServo;
-Stepper myStepper = Stepper(stepsPerRevolution, motorPin1, motorPin2, motorPin3, motorPin4);
+Stepper myStepper = Stepper(stepsPerRevolution, motorPin1, motorPin3, motorPin2, motorPin4);
 
 boolean stepperLock = true;
 
@@ -57,22 +57,22 @@ void setup() {
 void loop() {
   if (Serial.available() > 0){
     char incomingByte = Serial.read();
-
+    Serial.println(incomingByte);
     // Turns Head Left
     if (incomingByte == 'q'){
-      moveServoTo(90, 1000);  
+      moveServoTo(0, 1000);  
     } 
     // Turns Head Right
     if (incomingByte == 'e'){
-      moveServoTo(270, 1000); 
+      moveServoTo(180, 1000); 
     } 
     // Reset head to face forward
     if (incomingByte == 'r'){
-      moveServoTo(0, 1000); 
+      moveServoTo(90, 1000); 
     } 
     // Unlocks Stepper motor for grabbing an item after it has been seen or locks when its no longer seen.
     if (incomingByte == 'u'){
-      stepperLock = !stepperLock;
+      stepperLock = false;
     }
     
     if (incomingByte == 'o'){
@@ -97,10 +97,6 @@ void loop() {
     if (incomingByte == 'z'){
       controlMotor(false, 100, 1000, false, 100);
     }
-
-    if (incomingByte == 'z'){
-      controlMotor(false, 100, 1000, false, 100);
-    }
   }
 
   if (stepperLock == false){
@@ -113,7 +109,6 @@ void loop() {
       closeHand();
     }
   }
-  delay(1000);  
 }
 
 
@@ -121,10 +116,11 @@ void closeHand(){
   unsigned long startTime = millis();
   myStepper.setSpeed(30);
 
-  int steps = stepsPerRevolution;  
+  int steps = -stepsPerRevolution;  
   while (millis() - startTime < 2000) {
-    myStepper.step(-steps);
-  }}
+    myStepper.step(steps);
+  }
+}
 
 void openHand(){
   unsigned long startTime = millis();
@@ -194,26 +190,29 @@ void makeR2D2Noise() {
 }
 
 void initialize(){
-  moveServoTo(0, 1000);  // Reset head to face forward
+  
+  moveServoTo(0, 1000);  
+  moveServoTo(90, 1000);    
+  moveServoTo(180, 1000);
+  moveServoTo(90, 1000);
   makeR2D2Noise(); //Startup sound
   // controlMotor(false, 100, 1000, true, 70); // For testing motors are working on initialization
-
   //Run Script
-  while (true){
-      long distance = readUltrasonicDistance(trigPin, echoPin);
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println(" cm");
-    if (scriptStarted == 0){
-      buttonState = digitalRead(buttonPin);
-    }
+  // while (true){
+  //     long distance = readUltrasonicDistance(trigPin, echoPin);
+  // Serial.print("Distance: ");
+  // Serial.print(distance);
+  // Serial.println(" cm");
+  //   if (scriptStarted == 0){
+  //     buttonState = digitalRead(buttonPin);
+  //   }
 
-    if (buttonState == HIGH) {
-      Serial.println("RUN_SCRIPT");
-      scriptStarted == 1;
-      buttonState == LOW;
-      break;
-    }
-    delay(100);
-  }
+  //   if (buttonState == HIGH) {
+  //     Serial.println("RUN_SCRIPT");
+  //     scriptStarted == 1;
+  //     buttonState == LOW;
+  //     break;
+  //   }
+  //   delay(100);
+  // }
 }

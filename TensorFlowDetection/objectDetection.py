@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jun  5 00:29:16 2024
-
-@author: jacki
-"""
-
 from transformers import pipeline
 from helper import load_image_from_url, render_results_in_image
 from transformers import pipeline

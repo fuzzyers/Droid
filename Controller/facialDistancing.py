@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 13 17:37:37 2024
-
-@author: jacki
-"""
-
 import cv2
 import face_recognition
 import json
@@ -126,7 +119,7 @@ def estimate_depth(image_path, face_positions):
         position['proximity'] = proximity
         position['estimated_distance_meters'] = estimated_distance
         
-        print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
+        #print(f"{position['name']} is {proximity} and approximately {estimated_distance:.2f} meters away.")
         return proximity
 
 
@@ -134,6 +127,14 @@ def estimate_depth(image_path, face_positions):
 
 
 if __name__ == "__main__":
+    """
+        Variables:
+            KNOWN_FACE_NAMES = "Labels that will be inputed to go with there compainioning  facepath"
+            KNOWN_FACE_PATH = "Face Path for the person we are looking for to train the model on"
+            TEST_IMAGE_PATH = "This will be our img path that will be getting scanned over by the function"
+            
+        The printed Value at the end is what will be read in the controller to make its next decisisions
+    """
     KNOWN_FACE_NAMES = [sys.argv[1]]
     KNOWN_FACE_PATH = sys.argv[2]
     TEST_IMAGE_PATH = sys.argv[3]
@@ -144,7 +145,6 @@ if __name__ == "__main__":
         
     face_positions, _ = recognize_faces_and_positions(KNOWN_FACE_PATH, TEST_IMAGE_PATH, KNOWN_FACE_ENCODINGS, KNOWN_FACE_NAMES)
     depth = estimate_depth(TEST_IMAGE_PATH, face_positions)
-    print(depth)
     for result in face_positions:
         if result["name"] in KNOWN_FACE_NAMES:
             print(f"{result['name']} is in the {result['position']}")

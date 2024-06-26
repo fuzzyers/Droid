@@ -9,6 +9,7 @@ BAUD_RATE = 9600
 FACIAL_SCRIPT = "./facialDistancing.py"
 OBJECT_DETECTION_SCRIPT = "./objectDetection.py"
 PYTHON_INTERPRETER = "C:/Users/jacki/anaconda3/python"
+DEPTH_SCRIPT = "./depthmeasuiring.py"
 KNOWN_IMAGE_PATH = "me.jpg"
 IMAGE_PATH = "./group.jpg"
 MISSION = [{
@@ -19,27 +20,18 @@ MISSION = [{
     "MISSION_COMPLETED": False
 }]
 
-# States
-STATE_IDLE = 'IDLE'
-STATE_TAKE_PHOTO = 'TAKE_PHOTO'
-STATE_PROCESS_PHOTO = 'PROCESS_PHOTO'
-STATE_MOVE_TOWARDS = 'MOVE_TOWARDS'
-STATE_MOVE_TOWARDS_RIGHT = "MOVE_TOWARDS_RIGHT"
-STATE_MOVE_TOWARDS_LEFT = "MOVE_TOWARDS_LEFT"
-STATE_MISSION = 'MISSION'
-STATE_SEARCH = 'SEARCH'
-
 # Initialize serial communication
-ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
-time.sleep(2)
-last_known_position = ""
 found_twice = 0
+i = 0
 
 class StateMachine:
     def __init__(self):
         self.state = self.STATE_IDLE
         self.missions = MISSION
         self.last_known_position = None
+        self.found_twice = 0
+        self.ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
+        time.sleep(2)
 
     def STATE_IDLE(self):
         print("State: Idle")
@@ -72,6 +64,7 @@ class StateMachine:
                 if found_twice == 2:
                     self.transition_mission()
                 else:
+                    print(position, "Testing")
                     self.transition_move_towards()
             else:
                 self.transition_search()
@@ -79,35 +72,35 @@ class StateMachine:
 
     def STATE_MOVE_TOWARDS(self):
         print("Moving Forward")
-        ser.write(b'w')
+        self.ser.write(b'w')
         self.transition_take_photo()
 
     def STATE_MOVE_TOWARDS_LEFT(self):
         print("Strafing Left")
-        ser.write(b'a')
+        self.ser.write(b'a')
         self.transition_take_photo()
 
     def STATE_MOVE_TOWARDS_RIGHT(self):
-        print("Strafing Left")
-        ser.write(b'd')
+        print("Strafing Right")
+        self.ser.write(b'd')
         self.transition_take_photo()
         
     def STATE_SEARCH(self):
         print("Searching...", self.last_known_position)
         
         if self.last_known_position == "left":
-            ser.write(b'q')
+            self.ser.write(b'q')
             print("Turning: Left") #R2D2 Will rotate his head
             #Take Another photo then turn head back
         elif self.last_known_position == "right":
-            ser.write(b'e')
+            self.ser.write(b'e')
             print("Turning: Right")
-        else:
+        elif self.last_known_position == "center":
             print("Send It forward")
-            ser.write(b'w')
-            
-        self.last_known_position = None
-
+            self.ser.write(b'w')
+        else:
+            print("Process Mapping")
+            self.process_mapping()
             
         self.last_known_position = None
         self.transition_take_photo()
@@ -130,6 +123,7 @@ class StateMachine:
         self.state()
 
     def transition_move_towards(self):
+        print("lastknown", self.last_known_position)
         if self.last_known_position == "left":
             print("Moving: Left")
             self.state = self.STATE_MOVE_TOWARDS_LEFT
@@ -165,6 +159,7 @@ class StateMachine:
         cap.release()
         cv2.destroyAllWindows()
     
+        self.ser.write(b'r')
         if ret:
             cv2.imwrite(IMAGE_PATH, frame)
             print(f"Image saved as {IMAGE_PATH}")
@@ -195,20 +190,36 @@ class StateMachine:
 
     def process_photo_object(self):
         try:
-            print("TEST")
             IMAGE_PATH = "./bottle.jpg"
             result = subprocess.run([PYTHON_INTERPRETER, OBJECT_DETECTION_SCRIPT, IMAGE_PATH, "bottle"], check=True, capture_output=True, text=True)
             output = result.stdout.strip()
             last_word = output.split()[-1] if output.split() else None
             print(last_word)
             if last_word == MISSION[0]["GOAL"]:
+                self.ser.write(b'u')
                 MISSION[0]["GOAL_COMPLETED"] = True
                 print(MISSION[0]["GOAL_COMPLETED"])
         except subprocess.CalledProcessError as e:
             print(f"Error during subprocess call: {e}")
 
+    def process_mapping(self):
+        try:
+            result = subprocess.run([PYTHON_INTERPRETER, DEPTH_SCRIPT], check=True, capture_output=True, text=True)
+            output = result.stdout.strip()
+            print(output)
+            if output == "forward":
+                self.state = self.STATE_MOVE_TOWARDS
+            elif output == "left":
+                self.state = self.STATE_MOVE_TOWARDS_LEFT()
+            elif output == "right":
+                self.state = self.STATE_MOVE_TOWARDS_RIGHT()
+
+            
+        except subprocess.CalledProcessError as e:
+            print(f"Error during subprocess call: {e}")   
 
     def mission_task(self):
+        self.ser.write(b"o")
         MISSION[0]["MISSION_COMPLETED"] = True
 
 
@@ -217,6 +228,7 @@ class StateMachine:
         while True:
             if not self.missions or all(mission["MISSION_COMPLETED"] for mission in self.missions):
                 print("All missions completed. Exiting...")
+                self.ser.close()
                 break
             self.state()
 

@@ -8,10 +8,8 @@ from scipy import ndimage
 
 logging.set_verbosity_error()
 
-# Depth Estimation Pipeline
 depth_estimator = pipeline(task="depth-estimation")
 
-# Load and display raw image
 raw_image = Image.open('./group.jpg')
 raw_image = raw_image.convert('RGB')
 
@@ -31,7 +29,6 @@ prediction = torch.nn.functional.interpolate(
     align_corners=False,
 )
 
-# Convert to numpy array
 output = prediction.squeeze().numpy()
 formatted = (output * 255 / np.max(output)).astype("uint8")
 depth = Image.fromarray(formatted)
@@ -42,10 +39,8 @@ plt.title("Depth Map")
 plt.axis('off')
 plt.show()
 
-# Save depth map
 depth.save('depth_map.png')
 
-# Depth values for analysis
 depth_values = output
 
 min_depth = np.min(depth_values)
@@ -81,6 +76,16 @@ plt.axis('off')
 plt.show()
 
 def determine_movement_direction(depth_values, threshold):
+    """
+    Determines the best direction for the robot to move based on depth values.
+
+    Parameters:
+    - depth_values (numpy array): The depth values from the depth estimation.
+    - threshold (float): The depth threshold for deciding if an object is close.
+
+    Returns:
+    - str: The direction the robot should move ("forward", "left", "right").
+    """
     # Define regions of interest
     height, width = depth_values.shape
     center_region = depth_values[:, width//3:2*width//3]
@@ -103,6 +108,7 @@ def determine_movement_direction(depth_values, threshold):
         #If we see no desirable way to go we can turn 
         return "turn left"
 
-# Decision Making for Robot Navigation
-direction = determine_movement_direction(depth_values, threshold)
-print(f"{direction}")
+
+if __name__ == "__main__":
+    direction = determine_movement_direction(depth_values, threshold)
+    print(f"Recommended direction for the robot: {direction}")
